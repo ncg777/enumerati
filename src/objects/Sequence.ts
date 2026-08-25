@@ -56,7 +56,7 @@ export enum Operation {
     TritNmul = 'TritNmul',
     TritSum = 'TritSum',
     TritNsum = 'TritNsum',
-    
+    DeBruijn = 'DeBruijn',
 }
 
 // Define Combiner Enum
@@ -156,6 +156,34 @@ function applyTritwiseBinary(
     const ty = Numbers.toBalancedTernary(y, ndigits);
     const result = tx.map((t, i) => tritOp[Numbers.tritIndex.get(t)!][Numbers.tritIndex.get(ty[i])!]);
     return Numbers.fromBalancedTernary(result);
+}
+
+function generateDeBruijn(k: number, n: number): number[] {
+    if (k < 1 || n < 1) return [];
+    if (n === 1) return Array.from({ length: k }, (_, i) => i);
+
+    const a: number[] = new Array(k * n).fill(0);
+    const sequence: number[] = [];
+
+    function db(t: number, p: number): void {
+        if (t > n) {
+            if (n % p === 0) {
+                for (let j = 1; j <= p; j++) {
+                    sequence.push(a[j]);
+                }
+            }
+        } else {
+            a[t] = a[t - p];
+            db(t + 1, p);
+            for (let j = a[t - p] + 1; j < k; j++) {
+                a[t] = j;
+                db(t + 1, t);
+            }
+        }
+    }
+
+    db(1, 1);
+    return sequence;
 }
 
 /**
@@ -293,6 +321,7 @@ const ops = new Map<Operation, (x: number, y: number) => number[]>([
     [Operation.TritNmul, (x, y) => [applyTritwiseBinary(x, y, binaryTritOps.NMUL)]],
     [Operation.TritSum, (x, y) => [applyTritwiseBinary(x, y, binaryTritOps.SUM)]],
     [Operation.TritNsum, (x, y) => [applyTritwiseBinary(x, y, binaryTritOps.NSUM)]],
+    [Operation.DeBruijn, (x, y) => generateDeBruijn(x, y)],
 ]);
 
 export class Sequence {

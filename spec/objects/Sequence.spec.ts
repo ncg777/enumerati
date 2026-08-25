@@ -398,4 +398,34 @@ describe('Sequence Class', () => {
         const result = Sequence.combine(Combiner.Recycle, Operation.TritAnd, x, y);
         expect(result.toArray()).toEqual([-4]);
     });
+
+    test('combine() with Operation.DeBruijn generates B(k, n)', () => {
+        const result = Sequence.combine(
+            Combiner.Recycle,
+            Operation.DeBruijn,
+            new Sequence(2),
+            new Sequence(3)
+        );
+
+        expect(result.toArray()).toEqual([0, 0, 0, 1, 0, 1, 1, 1]);
+        expect(result.size()).toBe(2 ** 3);
+    });
+
+    test('combine() with Operation.DeBruijn handles order one and invalid parameters', () => {
+        const orderOne = Sequence.combine(
+            Combiner.Recycle,
+            Operation.DeBruijn,
+            new Sequence(3),
+            new Sequence(1)
+        );
+        const invalid = Sequence.combine(
+            Combiner.Recycle,
+            Operation.DeBruijn,
+            new Sequence(0),
+            new Sequence(2)
+        );
+
+        expect(orderOne.toArray()).toEqual([0, 1, 2]);
+        expect(invalid.toArray()).toEqual([]);
+    });
 });
